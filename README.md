@@ -13,6 +13,18 @@ Site do restaurante Sabor da Emilly, em Novo Gama (GO), com cardápio, fotos e m
 - Combo dos Amigos com disponibilidade às quintas-feiras.
 - Layout adaptado para celular e computador.
 
+## Abrir a prévia em localhost no Windows (um clique)
+
+1. No GitHub, selecione **Code → Download ZIP** na versão que contém o arquivo `ABRIR-LOCALHOST.bat`.
+2. Extraia **todas** as pastas e arquivos do ZIP no computador.
+3. Dê dois cliques em `ABRIR-LOCALHOST.bat`.
+4. O navegador abrirá automaticamente em **http://localhost:8080**.
+5. Para encerrar, feche a janela de terminal aberta pelo arquivo.
+
+**Não é necessário instalar Java, Node.js ou Python.** O script usa o Windows PowerShell 5.1, incluído no Windows 10 e 11. O servidor aceita somente conexões do próprio computador (127.0.0.1), e não torna o site público. Se a porta 8080 já estiver ocupada, feche o aplicativo que a utiliza antes de iniciar.
+
+Se você preferir usar Node.js ou Java, as opções abaixo continuam disponíveis.
+
 ## Executar com Java
 
 Instale um **JDK 8 ou superior**, com os comandos `java` e `javac` disponíveis no terminal.
@@ -48,13 +60,15 @@ Acesse **http://localhost:8080**. Não há dependências para instalar. Execute 
 
 ## Acesso pelo celular na mesma rede
 
-Mantenha o servidor aberto no computador. No Windows, execute `ipconfig` para encontrar o IPv4 do Wi-Fi e abra `http://IP-DO-COMPUTADOR:8080` no celular conectado à mesma rede. Permita conexões de rede privada no firewall quando necessário.
+Inicie o servidor Java ou Node.js no computador. No Windows, execute `ipconfig` para encontrar o IPv4 do Wi-Fi e abra `http://IP-DO-COMPUTADOR:8080` no celular conectado à mesma rede. Permita conexões de rede privada no firewall quando necessário.
 
 O repositório armazena o código. Para disponibilizar o site na internet, é necessário configurar uma hospedagem.
 
 ## Organização
 
 ```text
+ABRIR-LOCALHOST.bat     Abre a prévia no Windows com um clique
+localhost.ps1           Servidor local sem dependências
 public/
   index.html          Página e cardápio
   style.css           Aparência e adaptação para celular
