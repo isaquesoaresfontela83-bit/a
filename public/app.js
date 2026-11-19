@@ -14,6 +14,7 @@ document.addEventListener('keydown', event => {
   if (event.key === 'Escape' && nav.classList.contains('open')) {
     nav.classList.remove('open');
     toggle.setAttribute('aria-expanded', 'false');
+    toggle.setAttribute('aria-label', 'Abrir menu');
     toggle.focus();
   }
 });
@@ -46,6 +47,14 @@ document.querySelectorAll('[data-filter]').forEach(button => {
   });
 });
 const dialog = document.querySelector('#checkout');
+const checkoutForm = document.querySelector('#checkout-form');
+const submitOrder = checkoutForm.querySelector('.submit-order');
+const configuredNumber = document.querySelector('meta[name="whatsapp-number"]')?.content.trim() ?? '';
+const whatsappNumber = /^55[1-9]\d{9,10}$/.test(configuredNumber) ? configuredNumber : '';
+if (whatsappNumber) {
+  checkoutForm.querySelector('.whatsapp-note').textContent =
+    'O WhatsApp abrirá a conversa com a lanchonete. Confira a mensagem e envie o pedido.';
+}
 const money = value => new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(value);
 function addItem(name, price) {
   const found = cart.find(item => item.name === name);
@@ -62,7 +71,6 @@ document.querySelectorAll('.menu-card li').forEach(row => {
   button.setAttribute('aria-label', `Adicionar ${name} ao pedido`);
   button.addEventListener('click', () => addItem(name, price)); row.append(button);
 });
-const comboCard = document.querySelector('.combo-copy');
 const comboButton = document.querySelector('#combo-order');
 const isThursday = () => new Intl.DateTimeFormat('en-US', { weekday: 'short', timeZone: 'America/Sao_Paulo' }).format(new Date()) === 'Thu';
 function updateComboAvailability() {
@@ -81,6 +89,7 @@ updateComboAvailability();
 function updateCart() {
   const count = cart.reduce((sum, item) => sum + item.qty, 0);
   const total = cart.reduce((sum, item) => sum + item.qty * item.price, 0);
+  submitOrder.disabled = count === 0;
   document.querySelector('#cart-count').textContent = count;
   document.querySelector('#cart-fab').setAttribute('aria-label', `Abrir carrinho com ${count} ${count === 1 ? 'item' : 'itens'}`);
   document.querySelector('#cart-items').innerHTML = cart.length ? cart.map((item, index) => `<div class="cart-row"><div><b>${escapeHtml(item.name)}</b><small>${money(item.price)} cada</small></div><div class="qty"><button type="button" data-change="-1" data-index="${index}" aria-label="Diminuir">−</button><span>${item.qty}</span><button type="button" data-change="1" data-index="${index}" aria-label="Aumentar">+</button></div><strong>${money(item.price * item.qty)}</strong></div>`).join('') : '<p class="empty-cart">Seu carrinho está vazio. Escolha seus favoritos no cardápio.</p>';
@@ -102,7 +111,7 @@ document.querySelectorAll('[name="fulfillment"]').forEach(input => input.addEven
   document.querySelector('.address-field').hidden = !delivery;
 }));
 document.querySelector('[name="address"]').required = true;
-document.querySelector('#checkout-form').addEventListener('submit', event => {
+checkoutForm.addEventListener('submit', event => {
   event.preventDefault();
   if (!cart.length) { announcement.textContent = 'Selecione um item do cardápio antes de finalizar.'; document.querySelector('#cart-items').focus(); return; }
   if (!isThursday() && cart.some(item => item.name.startsWith('Combo dos Amigos'))) {
@@ -112,15 +121,17 @@ document.querySelector('#checkout-form').addEventListener('submit', event => {
   const lines = cart.map(item => `• ${item.qty}x ${item.name} — ${money(item.qty * item.price)}`);
   const total = cart.reduce((sum, item) => sum + item.qty * item.price, 0);
   const text = [
-    'Olá! Quero fazer um pedido no Sabor da Emily:', '', ...lines, '',
+    'Olá! Quero fazer um pedido no Sabor da Emilly:', '', ...lines, '',
     `Subtotal: ${money(total)}`, `Nome: ${form.get('name')}`,
     `Recebimento: ${form.get('fulfillment')}`,
     form.get('fulfillment') === 'Entrega' ? `Endereço: ${form.get('address')}` : 'Retirada no local',
     `Pagamento: ${form.get('payment')}`,
     form.get('notes') ? `Observações: ${form.get('notes')}` : ''
   ].filter(Boolean).join('\n');
-  const url = `https://wa.me/?text=${encodeURIComponent(text)}`;
-  const shareWindow = window.open(url, '_blank', 'noopener,noreferrer');
-  if (!shareWindow) window.location.href = url;
+  const link = document.createElement('a');
+  link.href = `https://wa.me/${whatsappNumber}?text=${encodeURIComponent(text)}`;
+  link.target = '_blank';
+  link.rel = 'noopener noreferrer';
+  link.click();
 });
 updateCart();
